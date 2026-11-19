@@ -1,6 +1,10 @@
 package racer
 
-import "time"
+// Several imports go inside one pair of brackets.
+import (
+	"sync" // standard library: tools for code that runs at the same time
+	"time"
+)
 
 // A "struct" groups several values under one name.
 //
@@ -63,18 +67,39 @@ func (r *Race) Laps(n int) *Race {
 	return r
 }
 
-// Run runs every lane, one after another, and returns one Result per lane,
-// in the order the lanes were added.
+// Run starts every lane at the same moment and waits for all of them to
+// finish. It returns one Result per lane, in the order the lanes were added.
 func (r *Race) Run() []Result {
-	// "var" declares a variable without giving it a value yet.
-	// An empty slice is ready to be appended to.
-	var results []Result
+	// make creates a slice with a fixed number of empty slots, one per lane.
+	// Each lane writes into its own slot, so no two lanes ever touch the
+	// same piece of memory. That is what makes this safe.
+	results := make([]Result, len(r.lanes))
 
-	// "range" walks over a slice. Each time round it gives the position and
-	// the item. We do not need the position here, so it goes to "_".
-	for _, l := range r.lanes {
-		results = append(results, r.runLane(l))
+	// A WaitGroup is a counter of jobs still running.
+	// "var" declares a variable without giving it a value; a WaitGroup is
+	// ready to use as it is.
+	var wg sync.WaitGroup
+
+	// "range" walks over a slice. Each time round it gives the position (i)
+	// and the item (l).
+	for i, l := range r.lanes {
+		wg.Add(1) // one more job is running
+
+		// "go" starts a goroutine: the function after it begins running in
+		// the background, and this loop carries on immediately without
+		// waiting. Goroutines are how Go does many things at once.
+		go func() {
+			// "defer" means "do this when the function ends, however it
+			// ends". Here: tell the WaitGroup this job is finished.
+			defer wg.Done()
+
+			results[i] = r.runLane(l)
+		}() // the () calls the function we just wrote
 	}
+
+	// Without this line Run would return straight away, before any lane
+	// had finished. Wait blocks until the counter is back to zero.
+	wg.Wait()
 	return results
 }
 
