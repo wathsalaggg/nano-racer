@@ -97,3 +97,15 @@ Every file is commented for people who are new to Go. A good order:
 
 The commit history adds these one step at a time, with an explanation in
 each commit message.
+
+## Contributing
+
+Contributions are welcome, including from people who are new to Go or to
+open source. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up, and
+the issues labelled
+[`good first issue`](https://github.com/wathsalaggg/nano-racer/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+for a place to start.
+
+## Licence
+
+[MIT](LICENSE)
