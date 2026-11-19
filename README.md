@@ -1,5 +1,7 @@
 # Nano-Racer
 
+[![tests](https://github.com/wathsalaggg/nano-racer/actions/workflows/tests.yml/badge.svg)](https://github.com/wathsalaggg/nano-racer/actions/workflows/tests.yml)
+
 The ultimate **geek playground** for Go developers who want to **race, benchmark, and visualize their functions** down to the **nanosecond**.  
 
 ---

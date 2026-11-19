@@ -1,0 +1,58 @@
+# This file tells GitHub to check the project automatically.
+#
+# GitHub looks in the folder .github/workflows for files like this one.
+# Each file describes a "workflow": a list of commands that GitHub runs on
+# its own computers when something happens in the repository.
+#
+# The format is called YAML. Indentation (the spaces at the start of a line)
+# shows what belongs to what, so the spaces matter.
+
+# The name shown on GitHub's "Actions" page.
+name: tests
+
+# When to run: on every push to main, and on every pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    # GitHub starts a fresh Linux computer for every run.
+    runs-on: ubuntu-latest
+
+    # The steps run in order, top to bottom. If one fails, the run stops and
+    # the commit gets a red cross. If all pass, it gets a green tick.
+    steps:
+      # "uses" runs a ready-made step written by someone else.
+      # This one downloads the repository onto that computer.
+      - name: Get the code
+        uses: actions/checkout@v7
+
+      # This one installs Go. "stable" means the newest released version.
+      - name: Install Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: stable
+
+      # "run" runs a command, the same way you would type it in a terminal.
+      #
+      # gofmt is Go's official code formatter. "gofmt -l ." lists the files
+      # that are not formatted the standard way. "test -z" passes only when
+      # that list is empty.
+      - name: Check formatting
+        run: test -z "$(gofmt -l .)"
+
+      # go vet looks for common mistakes that still compile.
+      # "./..." means "this folder and every folder inside it".
+      - name: Look for common mistakes
+        run: go vet ./...
+
+      # Run the tests. -race also watches for data races: two goroutines
+      # using the same variable at the same time.
+      - name: Run the tests
+        run: go test -race ./...
+
+      # Make sure every example still compiles.
+      - name: Build the examples
+        run: go build ./...
