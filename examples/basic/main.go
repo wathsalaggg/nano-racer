@@ -51,10 +51,6 @@ func main() {
 		Laps(20_000). // underscores in numbers are only for readability
 		Run()
 
-	for _, r := range results {
-		// Printf fills the % placeholders in order with the values after it.
-		// %-10s is text padded to 10 characters, %v is "print it normally",
-		// and \n ends the line.
-		fmt.Printf("%-10s %v per lap\n", r.Name, r.PerLap)
-	}
+	fmt.Println() // an empty line between the bars and the table
+	racer.Print(results)
 }
