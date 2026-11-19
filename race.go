@@ -2,7 +2,8 @@ package racer
 
 // Several imports go inside one pair of brackets.
 import (
-	"sync" // standard library: tools for code that runs at the same time
+	"sync"        // standard library: tools for code that runs at the same time
+	"sync/atomic" // numbers that are safe to share between goroutines
 	"time"
 )
 
@@ -80,6 +81,13 @@ func (r *Race) Run() []Result {
 	// ready to use as it is.
 	var wg sync.WaitGroup
 
+	// One lap counter per lane, so the progress bars know how far each lane
+	// has got. The lanes write these numbers while the bar-drawing code
+	// reads them. Two goroutines using one ordinary variable at the same
+	// time is a bug called a data race. atomic.Int64 is a number that is
+	// safe to share.
+	progress := make([]atomic.Int64, len(r.lanes))
+
 	// "range" walks over a slice. Each time round it gives the position (i)
 	// and the item (l).
 	for i, l := range r.lanes {
@@ -93,22 +101,33 @@ func (r *Race) Run() []Result {
 			// ends". Here: tell the WaitGroup this job is finished.
 			defer wg.Done()
 
-			results[i] = r.runLane(l)
+			// "&" gives the address of this lane's counter, so runLane
+			// updates the real counter and not a copy of it.
+			results[i] = r.runLane(l, &progress[i])
 		}() // the () calls the function we just wrote
 	}
 
-	// Without this line Run would return straight away, before any lane
-	// had finished. Wait blocks until the counter is back to zero.
+	// Draw the progress bars while the lanes run. This returns once every
+	// lane has completed its last lap.
+	r.watch(progress)
+
+	// Without this line Run could return before a lane had saved its
+	// result. Wait blocks until the counter is back to zero.
 	wg.Wait()
 	return results
 }
 
 // runLane runs one lane for the full number of laps and times it.
 // Lowercase name, so it is a private helper.
-func (r *Race) runLane(l lane) Result {
+//
+// done is this lane's lap counter. It goes up by one after every lap.
+func (r *Race) runLane(l lane, done *atomic.Int64) Result {
 	start := time.Now()
 	for i := 0; i < r.laps; i++ {
 		l.fn()
+		// This costs a few nanoseconds per lap, and it is counted in the
+		// lane's time. For very tiny functions that is noticeable.
+		done.Add(1)
 	}
 	total := time.Since(start)
 
