@@ -4,6 +4,8 @@
 
 The ultimate **geek playground** for Go developers who want to **race, benchmark, and visualize their functions** down to the **nanosecond**.  
 
+![Three sorting functions racing in a terminal, followed by a results table](docs/demo.gif)
+
 ---
 
 ## Features
