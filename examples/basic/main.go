@@ -7,34 +7,54 @@
 package main
 
 import (
-	"fmt" // standard library: printing text
+	"fmt"     // standard library: printing text
+	"strings" // standard library: working with text
 
 	// Our own library. The word "racer" in front is the name we use for it
 	// in this file.
 	racer "github.com/wathsalaggg/nano-racer"
 )
 
-// countTo counts from 0 up to n and does nothing else.
-// It exists only to give us something slow enough to time.
-func countTo(n int) {
-	total := 0
-	// A "for" loop: start i at 0, keep going while i < n, add 1 each time.
-	for i := 0; i < n; i++ {
-		total += i
+// Two ways to build the same piece of text: the letter "x", 500 times.
+// They give the same answer. The race shows which one gets there faster.
+
+// withPlus glues the text together with +=.
+// Every += builds a brand new string and copies the old one into it,
+// so the work grows as the string gets longer.
+func withPlus() {
+	s := ""
+	// A "for" loop: start i at 0, keep going while i < 500, add 1 each time.
+	for i := 0; i < 500; i++ {
+		s += "x"
 	}
 	// Go refuses to compile a variable that is never used.
 	// Assigning it to "_" tells Go we are ignoring it on purpose.
-	_ = total
+	_ = s
+}
+
+// withBuilder uses strings.Builder, a tool made for this job.
+// It keeps spare room at the end, so adding a letter rarely needs a copy.
+func withBuilder() {
+	var b strings.Builder
+	for i := 0; i < 500; i++ {
+		b.WriteString("x")
+	}
+	_ = b.String()
 }
 
 // Every runnable Go program starts at func main().
 func main() {
-	// Time wants a function with no inputs, but countTo needs a number.
-	// So we wrap the call inside a small function with no name,
-	// written right here: func() { ... }
-	took := racer.Time(func() {
-		countTo(10_000_000) // underscores in numbers are only for readability
-	})
+	// Each line ends with a dot so the chain can continue on the next line.
+	results := racer.New().
+		Lane("plus", withPlus).
+		Lane("builder", withBuilder).
+		Laps(20_000). // underscores in numbers are only for readability
+		Run()
 
-	fmt.Println("counting to 10 million took", took)
+	for _, r := range results {
+		// Printf fills the % placeholders in order with the values after it.
+		// %-10s is text padded to 10 characters, %v is "print it normally",
+		// and \n ends the line.
+		fmt.Printf("%-10s %v per lap\n", r.Name, r.PerLap)
+	}
 }
