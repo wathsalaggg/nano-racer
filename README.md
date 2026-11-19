@@ -55,11 +55,17 @@ and then the results:
 
 ## Try it
 
-A complete example is in `examples/basic`:
+The `examples` folder has four races you can run straight away:
 
-```
-go run ./examples/basic
-```
+| Command | The race |
+|---|---|
+| `go run ./examples/basic` | building text with `+=` against `strings.Builder` |
+| `go run ./examples/lookup` | finding a number in a slice against a map |
+| `go run ./examples/sorting` | bubble sort, insertion sort and Go's `sort.Ints` |
+| `go run ./examples/fibonacci` | a function that calls itself against a simple loop |
+
+Start with `basic`. Its comments explain the Go basics that the others
+build on.
 
 Run the tests with:
 
@@ -83,6 +89,7 @@ Every file is commented for people who are new to Go. A good order:
 4. `report.go`: the results table
 5. `race_test.go`: the tests
 6. `examples/basic/main.go`: a program that uses all of it
+7. the other examples, in any order
 
 The commit history adds these one step at a time, with an explanation in
 each commit message.
